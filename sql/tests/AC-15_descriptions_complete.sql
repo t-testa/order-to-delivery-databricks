@@ -1,5 +1,7 @@
 -- requires: databricks
 -- AC-15 (US-07): every silver and gold table and every column has a description. Rule: BR-18 and governance NFR.
+-- Databricks keeps a hidden backing table (__materialization_...) behind each materialized view. It is platform
+-- plumbing, not part of the model, so it is excluded.
 SELECT
   'AC-15' AS ac_id,
   'silver and gold tables without a description' AS check_name,
@@ -7,7 +9,7 @@ SELECT
   CAST(count(*) AS DOUBLE) AS actual,
   count(*) = 0 AS passed
 FROM information_schema.tables
-WHERE table_schema IN ('silver', 'gold') AND (comment IS NULL OR trim(comment) = '')
+WHERE table_schema IN ('silver', 'gold') AND NOT startswith(table_name, '__materialization') AND (comment IS NULL OR trim(comment) = '')
 UNION ALL
 SELECT
   'AC-15',
@@ -16,4 +18,4 @@ SELECT
   CAST(count(*) AS DOUBLE),
   count(*) = 0
 FROM information_schema.columns
-WHERE table_schema IN ('silver', 'gold') AND (comment IS NULL OR trim(comment) = '')
+WHERE table_schema IN ('silver', 'gold') AND NOT startswith(table_name, '__materialization') AND (comment IS NULL OR trim(comment) = '')
