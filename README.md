@@ -111,8 +111,8 @@ Verification status:
 | Where | Status |
 |---|---|
 | Local (DuckDB runs the exact pipeline SQL, 51 tests) | Passing. 11 deliberate breakages of the business logic (for example crediting over-shipments, dropping deduplication, an off-by-one on expiry) were each caught by at least one test. |
-| Databricks Free Edition (job `o2d-end-to-end`, 5 tasks) | To be recorded after the first run |
-| Genie benchmark (AC-17, 10 questions) | To be recorded after the first run |
+| Databricks Free Edition (job `o2d-end-to-end`, 5 tasks, serverless) | First run on 2026-10-28: pipeline, governance and tests ran. 81 of 82 checks passed, one governance check (AC-15) needed a fix. After the fix, 82 of 82 checks pass. |
+| Genie benchmark (AC-17, 10 questions) | First run 5 of 10 (the answers were right but ranking questions returned a top 10). After adding one instruction, 10 of 10. |
 
 ## Governance
 
@@ -134,7 +134,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-On Databricks Free Edition (CLI authenticated with a personal access token):
+On Databricks Free Edition (CLI authenticated with a personal access token). First create an empty catalog named `o2d` in the Catalog UI (Create catalog, standard, default storage), because Free Edition does not allow creating it from code:
 
 ```
 databricks bundle validate
@@ -142,7 +142,7 @@ databricks bundle deploy
 databricks bundle run o2d_end_to_end
 ```
 
-The full guide is `docs/04_run_on_databricks.md`. If the workspace does not allow creating a catalog, add `--var catalog=workspace`.
+The full guide is `docs/04_run_on_databricks.md`. If you prefer not to create a catalog, add `--var catalog=workspace` to the deploy and run commands to use the existing `workspace` catalog.
 
 ## Design decisions
 
@@ -152,6 +152,14 @@ The full guide is `docs/04_run_on_databricks.md`. If the workspace does not allo
 - **Ratios stored with numerators and denominators.** Averaging percentages is the classic KPI mistake, so the tables make it hard to do.
 - **System of record per fact (BR-01).** When the ERP and WMS disagree, the owning system wins, and contradictions are surfaced (BR-16) rather than silently fixed.
 - **Metadata re-applied after every refresh.** Pipeline-managed tables can lose metadata that is not part of their definition, so the job re-applies governance before running the checks that depend on it.
+
+## What the first real Databricks run taught me
+
+The project was tested locally before it ever touched Databricks, and the first run still found three things that only a real workspace shows. I kept them in the repo because they are the honest story of the build.
+
+1. **The catalog must exist before the pipeline is deployed.** A pipeline resource needs its catalog at deploy time, but my setup notebook created it later, at run time. On Free Edition, catalogs are also created in the UI (default storage), not by SQL or the CLI. The run guide now creates the catalog first.
+2. **Databricks keeps hidden backing tables behind each materialized view.** They are named `__materialization_...` and appear in `information_schema`, so the "every column has a description" test (AC-15) counted 230 columns that are not part of the model. The test now excludes them. The 81 other checks, including every KPI, matched the independent reference on the first run.
+3. **Genie answered correctly but in the wrong shape.** The first benchmark run scored 5 of 10. For example, "which customer has the most late orders" returned the right customer at the top of a top-10 list with extra columns. One instruction ("for which/most/lowest questions return exactly one row with only the name and the measure") brought the score to 10 of 10. Genie is an AI system, so the score can vary from run to run.
 
 ## Limitations
 

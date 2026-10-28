@@ -20,7 +20,9 @@ Check: you can open the workspace and see **SQL Warehouses** with a serverless s
 2. In the workspace, open your user menu, then **Settings**, **Developer**, **Access tokens**, **Generate new token**. Copy the token.
 3. Run `databricks configure`. Paste the workspace URL, then the token.
 
-Free Edition may refuse browser (OAuth) login from the CLI. A personal access token is the route that has been reported to work.
+Free Edition may refuse browser (OAuth) login from the CLI. A personal access token is the route that works.
+
+If pasting into the `databricks configure` prompt fails (some Windows terminals add hidden characters), skip the prompt. Create the file `.databrickscfg` in your home folder with three lines: `[DEFAULT]`, `host = <your workspace URL>` and `token = <your token>`.
 
 Check: `databricks current-user me` prints your user name.
 
@@ -36,6 +38,12 @@ Check: `databricks current-user me` prints your user name.
 3. Optional but recommended: run the local tests first (`pip install -r requirements-dev.txt` then `pytest`). They should show 51 passed.
 
 Check: the repository is on GitHub and the CI workflow starts.
+
+## Step 3b. Create the catalog in the UI
+
+The pipeline needs its catalog at deploy time, and Free Edition only lets you create catalogs in the UI. Open **Catalog**, click **Create catalog**, name it `o2d`, leave the type Standard and the default storage, then create it. (To skip this step, add `--var catalog=workspace` to the deploy and run commands below and use your existing `workspace` catalog.)
+
+Check: `o2d` appears in the Catalog list.
 
 ## Step 4. Validate the bundle
 
@@ -65,7 +73,7 @@ Check: all five tasks are green. If one fails, send me the task name and the ful
 
 | Task | Possible problem | What to do |
 |---|---|---|
-| setup | Free Edition refuses to create a new catalog | Redeploy and rerun with an existing catalog: `databricks bundle deploy --var catalog=workspace`, then `databricks bundle run o2d_end_to_end --var catalog=workspace` |
+| deploy | `Catalog 'o2d' does not exist` | Create the catalog in the UI (Step 3b), or use `--var catalog=workspace` |
 | run_pipeline | A table name or Auto Loader option is rejected | Send me the error from the pipeline event log |
 | apply_governance | `ALTER MATERIALIZED VIEW` is rejected | Send me the error, the step has a fallback and I will adjust it |
 | acceptance_tests | A check fails | Send me the failing rows (the task prints them) |
@@ -80,7 +88,7 @@ Check: the four screenshots exist.
 
 ## Step 8. Genie
 
-Follow `genie/instructions.md` to create the space, add the 10 benchmark questions and run the benchmark. Screenshot 5: the benchmark score.
+In the left menu, Genie is under **Genie Agents** (in the SQL section). Follow `genie/instructions.md` to create the space, add the 10 benchmark questions and run the benchmark. Screenshot 5: the benchmark score.
 
 Check: the score is at least 8 of 10 (acceptance criterion AC-17). If it is lower, send me the questions that failed and I will tune the instructions.
 

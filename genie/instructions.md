@@ -41,6 +41,8 @@ Joins.
 - date keys are integers yyyyMMdd and join to dim_date.date_key
 
 Vocabulary. Segments: Pharmacy, Clinic, Hardware Retail, Contractor. Warehouse codes: MTL, TOR, VAN. "Late order" means is_on_time = false. "Shortage" and "stock-out" mean backordered. Respond with the number and a one-line interpretation.
+
+Ranking questions. When a question asks "which" item has the most, least, highest, lowest or longest, return exactly one row (LIMIT 1) containing only the item name and the measure. Do not add extra columns and do not return a top 10 unless the user asks for a top N or a list.
 ```
 
 ## 4. Sample questions (add as sample questions on the space)
@@ -53,4 +55,4 @@ Vocabulary. Segments: Pharmacy, Clinic, Hardware Retail, Contractor. Warehouse c
 
 ## 5. Benchmarks
 
-Add the 10 questions from `benchmark.csv` as benchmarks (each has the expected SQL), run the benchmark, and record the score in the README. Acceptance criterion AC-17 requires at least 8 of 10 correct. The reference answers are in `benchmark_questions.md`, and the live values are stored in the table `qa.genie_reference` after the job has run.
+Add the 10 questions from `benchmark.csv` as benchmarks (each has the expected SQL; write table names as `o2d.gold.<table>` so they resolve in the benchmark), run the benchmark, and record the score in the README. Acceptance criterion AC-17 requires at least 8 of 10 correct. The reference answers are in `benchmark_questions.md`, and the live values are stored in the table `qa.genie_reference` after the job has run.
