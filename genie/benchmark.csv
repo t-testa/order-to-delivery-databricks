@@ -1,0 +1,11 @@
+question_id,question,expected_sql
+Q01,What is the overall fill rate?,SELECT sum(filled_cases) / sum(ordered_cases) AS fill_rate FROM gold.kpi_order_performance
+Q02,Which customer segment has the lowest OTIF rate?,"SELECT segment, sum(otif_orders) / sum(otd_eligible_orders) AS otif_pct FROM gold.kpi_order_performance GROUP BY segment ORDER BY otif_pct ASC LIMIT 1"
+Q03,What was the on-time delivery rate for orders placed in 2026 Q1?,"SELECT sum(on_time_orders) / sum(otd_eligible_orders) AS otd_pct FROM gold.kpi_order_performance WHERE year_month IN ('2026-01', '2026-02', '2026-03')"
+Q04,How many backordered lines were there for Pharmacy customers?,SELECT sum(backorder_lines) AS backorder_lines FROM gold.kpi_order_performance WHERE segment = 'Pharmacy'
+Q05,Which warehouse has the longest average order-to-delivery lead time?,"SELECT warehouse_code, sum(lead_time_days_sum) / sum(lead_time_orders) AS avg_lead_time_days FROM gold.kpi_order_performance GROUP BY warehouse_code ORDER BY avg_lead_time_days DESC LIMIT 1"
+Q06,How many shipment lines left from expired lots?,SELECT sum(expired_lot_lines) AS expired_lot_lines FROM gold.kpi_expired_lots
+Q07,What is the value of expired stock in the Toronto warehouse?,SELECT sum(expired_stock_value) AS expired_stock_value FROM gold.kpi_inventory_expiry WHERE warehouse_code = 'TOR'
+Q08,Which product category has the most backordered cases?,"SELECT p.category, sum(f.backorder_cases) AS backorder_cases FROM gold.fact_order_line f JOIN gold.dim_product p ON p.product_key = f.product_key WHERE f.is_kpi_scope GROUP BY p.category ORDER BY backorder_cases DESC LIMIT 1"
+Q09,Which customer has the most late orders?,"SELECT c.customer_name, count(*) AS late_orders FROM gold.fact_order o JOIN gold.dim_customer c ON c.customer_id = o.customer_id WHERE o.is_kpi_scope AND o.is_on_time = false GROUP BY c.customer_name ORDER BY late_orders DESC LIMIT 1"
+Q10,How many orders have an ERP status that contradicts the warehouse system?,SELECT count(*) AS mismatched_orders FROM gold.dq_status_mismatch
