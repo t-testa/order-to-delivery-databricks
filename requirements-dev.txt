@@ -1,0 +1,5 @@
+# Local verification only (the Databricks run needs nothing beyond what serverless provides).
+pandas>=2.0
+duckdb>=1.0
+sqlglot>=25.0
+pytest>=8.0
