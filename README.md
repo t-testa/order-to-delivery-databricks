@@ -111,7 +111,7 @@ Verification status:
 | Where | Status |
 |---|---|
 | Local (DuckDB runs the exact pipeline SQL, 51 tests) | Passing. 11 deliberate breakages of the business logic (for example crediting over-shipments, dropping deduplication, an off-by-one on expiry) were each caught by at least one test. |
-| Databricks Free Edition (job `o2d-end-to-end`, 5 tasks, serverless) | First run on 2026-10-28: pipeline, governance and tests ran. 81 of 82 checks passed, one governance check (AC-15) needed a fix. After the fix, 82 of 82 checks pass. |
+| Databricks Free Edition (job `o2d-end-to-end`, 5 tasks, serverless) | First run on 2026-10-28: pipeline, governance and tests ran. 81 of 82 checks passed, one governance check (AC-15) needed a fix. After the fix, a clean end-to-end run (all five tasks, 7 min 55 s) passed 82 of 82 checks. |
 | Genie benchmark (AC-17, 10 questions) | First run 5 of 10 (the answers were right but ranking questions returned a top 10). After adding one instruction, 10 of 10. |
 
 ## Governance
@@ -152,6 +152,20 @@ The full guide is `docs/04_run_on_databricks.md`. If you prefer not to create a 
 - **Ratios stored with numerators and denominators.** Averaging percentages is the classic KPI mistake, so the tables make it hard to do.
 - **System of record per fact (BR-01).** When the ERP and WMS disagree, the owning system wins, and contradictions are surfaced (BR-16) rather than silently fixed.
 - **Metadata re-applied after every refresh.** Pipeline-managed tables can lose metadata that is not part of their definition, so the job re-applies governance before running the checks that depend on it.
+
+## Evidence from the Databricks run
+
+The full job on Databricks Free Edition (serverless), all five tasks succeeded:
+
+![Job run](docs/images/job_run_succeeded.png)
+
+Acceptance checks by criterion (82 checks, all passing):
+
+![Acceptance results](docs/images/acceptance_results_by_criterion.png)
+
+Genie benchmark, 10 of 10 after adding the ranking instruction:
+
+![Genie benchmark](docs/images/genie_benchmark_10_of_10.png)
 
 ## What the first real Databricks run taught me
 
