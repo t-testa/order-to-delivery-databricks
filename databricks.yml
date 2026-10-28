@@ -1,0 +1,24 @@
+# Databricks Asset Bundle for the order-to-delivery analytics project.
+#
+#   databricks bundle validate
+#   databricks bundle deploy
+#   databricks bundle run o2d_end_to_end
+#
+# Designed for Databricks Free Edition: serverless compute only, no cluster definitions.
+
+bundle:
+  name: order-to-delivery
+
+variables:
+  catalog:
+    description: Unity Catalog catalog that holds the bronze, silver, gold and qa schemas.
+    default: o2d
+
+include:
+  - resources/*.yml
+
+targets:
+  free:
+    default: true
+    # The workspace host and credentials come from your Databricks CLI profile
+    # (databricks configure) or the DATABRICKS_HOST and DATABRICKS_TOKEN variables.

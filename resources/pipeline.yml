@@ -1,0 +1,18 @@
+# Bronze (Auto Loader), silver (data quality expectations) and gold (star schema and KPIs).
+resources:
+  pipelines:
+    o2d_pipeline:
+      name: o2d-medallion-pipeline
+      catalog: ${var.catalog}
+      schema: bronze
+      serverless: true
+      continuous: false
+      libraries:
+        - file:
+            path: ../src/pipelines/bronze.sql
+        - file:
+            path: ../src/pipelines/silver.sql
+        - file:
+            path: ../src/pipelines/gold.sql
+      configuration:
+        landing_path: /Volumes/${var.catalog}/bronze/landing

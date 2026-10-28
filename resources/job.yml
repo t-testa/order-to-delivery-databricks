@@ -1,0 +1,45 @@
+resources:
+  jobs:
+    o2d_end_to_end:
+      name: o2d-end-to-end
+      description: >
+        Creates the catalog objects, generates the synthetic ERP and WMS extracts, runs the medallion pipeline
+        (full refresh), applies governance metadata and runs the SQL acceptance tests.
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: ../src/setup/00_setup.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: generate_data
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: ../src/data_generation/01_generate_data.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: run_pipeline
+          depends_on:
+            - task_key: generate_data
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.o2d_pipeline.id}
+            full_refresh: true
+
+        - task_key: apply_governance
+          depends_on:
+            - task_key: run_pipeline
+          notebook_task:
+            notebook_path: ../src/governance/03_apply_governance.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: acceptance_tests
+          depends_on:
+            - task_key: apply_governance
+          notebook_task:
+            notebook_path: ../src/qa/04_run_acceptance_tests.py
+            base_parameters:
+              catalog: ${var.catalog}
